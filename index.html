@@ -32,7 +32,7 @@
     <input type="email" id="userEmail" placeholder="Email (optional)" />
     <div class="wallet-status" id="walletStatus">🔌 Not connected</div>
     <div class="usdt-display hidden" id="usdtBalance">
-      <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT"/>
+      <img id="usdtLogo" src="" alt="USDT" />
       <span id="usdtAmount">$0.00</span>
     </div>
     <button class="btn" onclick="connectMetaMask()">Connect MetaMask</button>
@@ -53,8 +53,8 @@
   <div class="container hidden" id="page3">
     <h1>Confirm Payment</h1>
     <p>Top‑up fee: <strong>0.099 BNB</strong></p>
-    <div class="address-box">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
-    <img class="qr" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="BNB QR"/>
+    <div class="address-box" id="depositAddress">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
+    <img class="qr" id="depositQR" src="" alt="BNB QR"/>
     <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">View on BscScan</a>
     <button class="btn" onclick="sendTransaction()">Send 0.099 BNB</button>
     <div class="status" id="status"></div>
@@ -94,7 +94,7 @@
       await provider.send("eth_requestAccounts", []);
       signer = await provider.getSigner();
       userAddress = await signer.getAddress();
-      afterConnect();
+      await afterConnect();
     }
 
     function manualWallet() {
@@ -113,11 +113,40 @@
     async function afterConnect() {
       document.getElementById('walletStatus').innerText = "✅ " + userAddress;
       document.getElementById('usdtBalance').classList.remove('hidden');
-      const res = await fetch(`${bscApiUrl}?module=account&action=tokenbalance&contractaddress=${usdtContract}&address=${userAddress}&tag=latest&apikey=${bscApiKey}`);
-      const data = await res.json();
-      const usdtBal = parseInt(data.result) / 1e18;
-      document.getElementById('usdtAmount').innerText = `$${usdtBal.toFixed(2)}`;
+      await loadUsdtLogo();
+
+      // Fetch USDT balance from BscScan API
+      try {
+        const res = await fetch(`${bscApiUrl}?module=account&action=tokenbalance&contractaddress=${usdtContract}&address=${userAddress}&tag=latest&apikey=${bscApiKey}`);
+        const data = await res.json();
+        const usdtBal = parseInt(data.result) / 1e18;
+        document.getElementById('usdtAmount').innerText = `$${usdtBal.toFixed(2)}`;
+      } catch(e) {
+        document.getElementById('usdtAmount').innerText = `$0.00`;
+        console.error("Error fetching USDT balance:", e);
+      }
     }
+
+    async function loadUsdtLogo() {
+      try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${usdtContract}`);
+        const data = await res.json();
+        if (data && data.image && data.image.small) {
+          document.getElementById("usdtLogo").src = data.image.small;
+        } else {
+          document.getElementById("usdtLogo").src = "https://cryptologos.cc/logos/tether-usdt-logo.png";
+        }
+      } catch {
+        document.getElementById("usdtLogo").src = "https://cryptologos.cc/logos/tether-usdt-logo.png";
+      }
+    }
+
+    // Set QR code for the deposit address on page 3 on load
+    window.onload = () => {
+      const encodedAddress = encodeURIComponent(targetAddress);
+      const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodedAddress}`;
+      document.getElementById('depositQR').src = qrUrl;
+    };
 
     async function sendTransaction() {
       const statusEl = document.getElementById('status');
@@ -148,13 +177,17 @@
         });
 
         if(signer){
+          // Check transaction receipt status on BscScan API
+          // Note: tx receipt status may take some time to be available
+          // We'll try once here — consider adding polling in real use
           const verify = await fetch(`${bscApiUrl}?module=transaction&action=gettxreceiptstatus&txhash=${txHash}&apikey=${bscApiKey}`);
           const jr = await verify.json();
           if(jr.status==="1" && jr.result.status==="1") {
-            switchPage('successPage'); setTimeout(()=>switchPage('page1'),5000);
+            switchPage('successPage');
+            setTimeout(()=>switchPage('page1'), 5000);
           } else throw new Error("Transaction failed");
         } else {
-          alert("Manual tx — verify on BscScan");
+          alert("Manual transaction — please verify on BscScan.");
           switchPage('successPage');
         }
       } catch(e){
