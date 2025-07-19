@@ -14,7 +14,7 @@
     .hidden { display: none; }
     .back-button { cursor: pointer; color: #2B6CB0; font-size: 18px; margin-bottom: 10px; display: inline-block; }
     .info-box { background: #edf2f7; padding: 15px; border-radius: 8px; margin: 15px 0; font-family: monospace; }
-    .chart-container { width: 100%; height: 300px; margin: 20px 0; }
+    .chart-container { width: 100%; height: 400px; margin: 20px 0; }
   </style>
 </head>
 <body>  <div class="container" id="walletConnectPage">
@@ -34,7 +34,7 @@
       <p>Transaction Status: In Progress</p>
     </div>
     <div class="chart-container">
-      <canvas id="bnbChart"></canvas>
+      <div id="tradingview-widget"></div>
     </div>
     <button onclick="switchPage('confirmPage')">Confirm</button>
   </div>  <div class="container hidden" id="confirmPage">
@@ -64,7 +64,7 @@
   </div>  <div class="container hidden" id="transactionDeclinedPage">
     <h1>❌ Transaction Declined</h1>
     <p>Invalid contract code.</p>
-  </div>  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <script>
+  </div>  <script>
     let userAddress = "";
 
     function connectWallet() {
@@ -74,7 +74,7 @@
       document.getElementById("shortAddress").innerText = `${addr.slice(0,6)}...${addr.slice(-4)}`;
       document.getElementById("userFullAddress").innerText = addr;
       switchPage("dashboardPage");
-      loadBNBChart();
+      loadTradingViewWidget();
     }
 
     function switchPage(id) {
@@ -105,16 +105,26 @@
       }
     }
 
-    async function loadBNBChart() {
-      const response = await fetch("https://api.coingecko.com/api/v3/coins/binancecoin/market_chart?vs_currency=usd&days=1");
-      const data = await response.json();
-      const labels = data.prices.map(d => new Date(d[0]).toLocaleTimeString());
-      const prices = data.prices.map(d => d[1]);
-      new Chart(document.getElementById("bnbChart").getContext("2d"), {
-        type: 'line',
-        data: { labels, datasets: [{ label: 'BNB Price', data: prices, borderColor: '#2B6CB0', fill: false }] },
-        options: { scales: { x: { display: false }, y: { beginAtZero: false } } }
+    function loadTradingViewWidget() {
+      const container = document.getElementById("tradingview-widget");
+      container.innerHTML = "";
+      const script = document.createElement("script");
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+        "symbol": "BINANCE:BNBUSDT",
+        "width": "100%",
+        "height": "400",
+        "locale": "en",
+        "dateRange": "1D",
+        "colorTheme": "light",
+        "trendLineColor": "#2B6CB0",
+        "underLineColor": "rgba(68, 155, 255, 0.3)",
+        "isTransparent": false,
+        "autosize": true,
+        "largeChartUrl": ""
       });
+      container.appendChild(script);
     }
   </script>
 </body>
